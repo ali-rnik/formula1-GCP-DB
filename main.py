@@ -59,9 +59,7 @@ def addDriver():
             print(result);
             if result != []:
                 return render_template('add-driver.html', 
-                    user_info=user_info, info_message="Driver Already added!")
-
-           
+                        user_info=user_info, info_message="Driver Already added!")
 
             entity_key = datastore_client.key('Drivers', request.form['name'])
             entity = datastore.Entity(key=entity_key)
@@ -78,7 +76,60 @@ def addDriver():
         except ValueError as exc:
             error_message = str(exc)
         return render_template('add-driver.html', 
-            user_info=user_info, info_message="Driver added Succesfully!")
+                user_info=user_info, info_message="Driver added Succesfully!")
+
+@app.route('/add_team', methods=['GET'])
+def addTeamPage():
+    id_token = request.cookies.get("token")
+    claims = None
+    user_info = None
+    error_message = None
+    if id_token:
+        try:
+            claims = google.oauth2.id_token.verify_firebase_token(id_token,
+                    firebase_request_adapter)
+            user_info = retrieveUserInfo(claims)
+        except ValueError as exc:
+            error_message = str(exc)
+
+    return render_template('add-team.html', 
+            error_message=error_message,
+            user_info=user_info)
+
+@app.route('/add_team', methods=['POST'])
+def addTeam():
+    id_token = request.cookies.get("token")
+    claims = None
+    user_info = None
+    error_message = None
+    info_message = None
+    if id_token:
+        try:
+            claims = google.oauth2.id_token.verify_firebase_token(id_token,
+                    firebase_request_adapter)
+            query = datastore_client.query(kind='Teams')
+            query.add_filter('name', '=', request.form['name'])
+            result = list(query.fetch())
+            if result != []:
+                return render_template('add-team.html', 
+                        user_info=user_info, info_message="Team Already added!")
+
+            entity_key = datastore_client.key('Teams', request.form['name'])
+            entity = datastore.Entity(key=entity_key)
+            entity.update({
+                'name': request.form['name'],
+                'year_fnd': request.form['year_fnd'],           
+                'pole_position': request.form['pole_position'],
+                'wins': request.form['wins'],
+                'titles': request.form['titles'],
+                'finish_position': request.form['finish_position']})
+            datastore_client.put(entity)
+        except ValueError as exc:
+            error_message = str(exc)
+        return render_template('add-team.html', 
+              user_info=user_info, info_message="Team added Succesfully!")
+
+
 
 @app.route("/")
 def root():

@@ -1,0 +1,51 @@
+<!doctype html>
+<html>
+	<head>
+		<title>Formula1 Statistics</title>
+		<script src="{{ url_for('static', filename='script.js') }}"></script>
+		<link type="text/css" rel="stylesheet" href="{{ url_for('static',
+			    filename='style.css') }}">
+		<script src="https://www.gstatic.com/firebasejs/ui/4.4.0/firebase-ui-auth.js"></script>
+		<link type="text/css" rel="stylesheet"
+				      href="https://www.gstatic.com/firebasejs/ui/4.4.0/firebase-ui-auth.css" />
+	</head>
+	<body>
+		<h1> Welcome to Formula1 </h1>
+		<div id="firebase-auth-container"></div>
+		<button id="sign-out" hidden="true" >Sign out</button>
+		<div id="login-info" hidden="true">
+			<h2>Login Info</h2>
+			{% if user_info %}
+			<dl>
+				<dt>Hello Dear: </dt><dd>{{ user_info['email'] }}</dd>
+			</dl>
+			{% elif error_message %}
+			<p>Error Message: {{ error_message }}</p>
+			{% endif %}
+		</div>	
+		<div id="add-team">
+			<form action="/add_team" method="post">
+			name: 			<input type="text" name="name"/><br/>
+			year_fnd: 		<input type="text" name="year_fnd"/><br/>
+			pole_position:  	<input type="text" name="pole_position"/><br/>
+			wins: 			<input type="text" name="wins"/><br/>
+			titles:			<input type="text" name="titles"/><br/>
+			finish_position:	<input type="text" name="finish_position"/><br/>
+					<input type="submit" name="button"/>
+			{% if info_message %}
+			<p> {{ info_message}} </p>
+			{% endif %}
+			</form>
+		</div>
+		<div id="teams-list">
+			{% for team in teams %}
+			{{team.name}} <br>
+			{{team.year_fnd}} <br>
+			<br><br>
+			{% endfor %}
+		</div>
+	</body>
+	<script src="https://www.gstatic.com/firebasejs/7.14.5/firebase-app.js"></script>
+	<script src="https://www.gstatic.com/firebasejs/7.8.0/firebase-auth.js"></script>
+	<script src="{{ url_for('static', filename='app-setup.js') }}"></script>
+</html>
