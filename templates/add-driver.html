@@ -13,8 +13,6 @@
 		<h1> Welcome to Formula1 </h1>
 		<div id="firebase-auth-container"></div>
 		<button id="sign-out" hidden="true" >Sign out</button>
-		<button id="add-driver" hidden="true" onclick="document.location='add_driver'"> Add driver </button>
-		<button id="add-team" hidden="true" onclick="document.location='add_team'"> Add team </button>
 		<div id="login-info" hidden="true">
 			<h2>Login Info</h2>
 			{% if user_info %}
@@ -25,6 +23,29 @@
 			<p>Error Message: {{ error_message }}</p>
 			{% endif %}
 		</div>	
+		<div id="add-driver">
+			<form action="/add_driver" method="post">
+			name: 		<input type="text" name="name"/><br/>
+			age: 		<input type="text" name="age"/><br/>
+			pole_position:  <input type="text" name="pole_position"/><br/>
+			wins: 		<input type="text" name="wins"/><br/>
+			points: 	<input type="text" name="points"/><br/>
+			titles:		<input type="text" name="titles"/><br/>
+			fastest_laps:	<input type="text" name="fastest_laps"/><br/>
+			team:		<input type="text" name="team"/><br/>
+					<input type="submit" name="button"/>
+			{% if info_message %}
+			<p> {{ info_message}} </p>
+			{% endif %}
+			</form>
+		</div>
+		<div id="drivers-list">
+			{% for driver in drivers %}
+			{{driver.name}} <br>
+			{{driver.team}} <br>
+			<br><br>
+			{% endfor %}
+		</div>
 	</body>
 	<script src="https://www.gstatic.com/firebasejs/7.14.5/firebase-app.js"></script>
 	<script src="https://www.gstatic.com/firebasejs/7.8.0/firebase-auth.js"></script>

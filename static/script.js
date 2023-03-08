@@ -1,8 +1,9 @@
 'use strict';
 window.addEventListener('load', function () {
 	document.getElementById('sign-out').onclick = function() {
-		//ask firebase to sign out the user
 		firebase.auth().signOut();
+		window.location.replace('/');
+
 	};
 
 	var uiConfig = {
@@ -15,7 +16,8 @@ window.addEventListener('load', function () {
 		if(user) {
 			document.getElementById('sign-out').hidden = false;
 			document.getElementById('login-info').hidden = false;
-			console.log('Signed in as ${user.displayName} (${user.email})');
+			document.getElementById('add-driver').hidden = false;
+			document.getElementById('add-team').hidden = false;
 			user.getIdToken().then(function(token) {
 				document.cookie = "token=" + token;
 			});
@@ -24,6 +26,8 @@ window.addEventListener('load', function () {
 			ui.start('#firebase-auth-container', uiConfig);
 			document.getElementById('sign-out').hidden = true;
 			document.getElementById('login-info').hidden = true;
+			document.getElementById('add-driver').hidden = true;
+			document.getElementById('add-team').hidden = true;
 			document.cookie = "token=";
 		}
 	}, function(error) {
