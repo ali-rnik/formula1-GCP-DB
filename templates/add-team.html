@@ -13,6 +13,7 @@
 		<h1> Welcome to Formula1 </h1>
 		<div id="firebase-auth-container"></div>
 		<button id="sign-out" hidden="true" >Sign out</button>
+		<button id="homepage" onclick="document.location='/'"> homepage </button>
 		<div id="login-info" hidden="true">
 			<h2>Login Info</h2>
 			{% if user_info %}
@@ -26,11 +27,11 @@
 		<div id="add-team">
 			<form action="/add_team" method="post">
 			name: 			<input type="text" name="name"/><br/>
-			year_fnd: 		<input type="text" name="year_fnd"/><br/>
-			pole_position:  	<input type="text" name="pole_position"/><br/>
-			wins: 			<input type="text" name="wins"/><br/>
-			titles:			<input type="text" name="titles"/><br/>
-			finish_position:	<input type="text" name="finish_position"/><br/>
+			year_fnd: 		<input type="number" name="year_fnd"/><br/>
+			pole_position:  	<input type="number" name="pole_position"/><br/>
+			wins: 			<input type="number" name="wins"/><br/>
+			titles:			<input type="number" name="titles"/><br/>
+			finish_position:	<input type="number" name="finish_position"/><br/>
 					<input type="submit" name="button"/>
 			{% if info_message %}
 			<p> {{ info_message}} </p>

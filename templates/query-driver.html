@@ -11,20 +11,10 @@
 	</head>
 	<body>
 		<h1> Welcome to Formula1 </h1>
-
-		{% with messages = get_flashed_messages() %}
-		{% if messages %}
-			{% for message in messages %}
-			<p style="background-color:Tomato;"> {{ message }} </p> 
-			{% endfor %}
-		{% endif %}
-		{% endwith %}
-
+		<p> Driver Query Page </p>
 		<div id="firebase-auth-container"></div>
 		<button id="sign-out" hidden="true" >Sign out</button>
-		<button id="add-driver" onclick="document.location='add_driver'"> Add driver </button>
-		<button id="add-team"  onclick="document.location='add_team'"> Add team </button>
-		<button id="query-driver" onclick="document.location='query_driver'"> Query driver </button>
+		<button id="homepage" onclick="document.location='/'"> homepage </button>
 		<div id="login-info" hidden="true">
 			<h2>Login Info</h2>
 			{% if user_info %}
@@ -35,6 +25,35 @@
 			<p>Error Message: {{ error_message }}</p>
 			{% endif %}
 		</div>	
+		<div id="query-driver">
+			<form action="/query_driver" method="post">
+			name: 		<input type="text" name="name"/><br/>
+			age: 		<input type="number" name="age"/><br/>
+			pole_position:  <input type="number" name="pole_position"/><br/>
+			wins: 		<input type="number" name="wins"/><br/>
+			points: 	<input type="number" name="points"/><br/>
+			titles:		<input type="number" name="titles"/><br/>
+			fastest_laps:	<input type="number" name="fastest_laps"/><br/>
+			team:		<input type="text" name="team"/><br/>
+					<input type="submit" name="button"/>
+			{% if info_message %}
+			<p> {{ info_message}} </p>
+			{% endif %}
+			</form>
+		</div>
+		<div id="result">
+			{% for driver in result %}
+			{{driver.name}} <br/>
+			{{driver.age}} <br/>
+			{{driver.pole_position}} <br/>
+			{{driver.wins}} <br/>
+			{{driver.points}} <br/>
+			{{driver.titles}} <br/>
+			{{driver.fastest_laps}} <br/>
+			{{driver.team}} <br/>
+			<br><br>
+			{% endfor %}
+		</div>
 	</body>
 	<script src="https://www.gstatic.com/firebasejs/7.14.5/firebase-app.js"></script>
 	<script src="https://www.gstatic.com/firebasejs/7.8.0/firebase-auth.js"></script>

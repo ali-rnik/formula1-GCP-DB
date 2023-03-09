@@ -13,6 +13,7 @@
 		<h1> Welcome to Formula1 </h1>
 		<div id="firebase-auth-container"></div>
 		<button id="sign-out" hidden="true" >Sign out</button>
+		<button id="homepage" onclick="document.location='/'"> homepage </button>
 		<div id="login-info" hidden="true">
 			<h2>Login Info</h2>
 			{% if user_info %}
@@ -26,12 +27,12 @@
 		<div id="add-driver">
 			<form action="/add_driver" method="post">
 			name: 		<input type="text" name="name"/><br/>
-			age: 		<input type="text" name="age"/><br/>
-			pole_position:  <input type="text" name="pole_position"/><br/>
-			wins: 		<input type="text" name="wins"/><br/>
-			points: 	<input type="text" name="points"/><br/>
-			titles:		<input type="text" name="titles"/><br/>
-			fastest_laps:	<input type="text" name="fastest_laps"/><br/>
+			age: 		<input type="number" name="age"/><br/>
+			pole_position:  <input type="number" name="pole_position"/><br/>
+			wins: 		<input type="number" name="wins"/><br/>
+			points: 	<input type="number" name="points"/><br/>
+			titles:		<input type="number" name="titles"/><br/>
+			fastest_laps:	<input type="number" name="fastest_laps"/><br/>
 			team:		<input type="text" name="team"/><br/>
 					<input type="submit" name="button"/>
 			{% if info_message %}

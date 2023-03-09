@@ -1,0 +1,5 @@
+indexes:
+  - kind: Teams
+    properties:
+      - name: name
+      - name: age

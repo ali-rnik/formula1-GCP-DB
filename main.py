@@ -2,11 +2,17 @@ import datetime
 import random
 from google.cloud import datastore
 import google.oauth2.id_token
-from flask import Flask, render_template, request, redirect
+from flask import Flask, render_template, request, redirect, flash
 from google.auth.transport import requests
 
 app = Flask(__name__)
+
+app.config['SECRET_KEY'] = "somesecretisagoodideatohaveprivacy" 
+app.config['SESSION_TYPE'] = 'filesystem' 
+app.config['SESSION_PERMANENT']= False
+
 datastore_client = datastore.Client()
+
 firebase_request_adapter = requests.Request()
 
 def retrieveUserInfo(claims):
@@ -38,9 +44,11 @@ def addDriverPage():
         except ValueError as exc:
             error_message = str(exc)
 
-    return render_template('add-driver.html', 
-            error_message=error_message,
-            user_info=user_info)
+        return render_template('add-driver.html', 
+                error_message=error_message,
+                user_info=user_info)
+    flash('Please Login First')
+    return redirect('/')
 
 @app.route('/add_driver', methods=['POST'])
 def addDriver():
@@ -92,9 +100,12 @@ def addTeamPage():
         except ValueError as exc:
             error_message = str(exc)
 
-    return render_template('add-team.html', 
-            error_message=error_message,
-            user_info=user_info)
+        return render_template('add-team.html', 
+                error_message=error_message,
+                user_info=user_info)
+
+    flash('Please Login First')
+    return redirect('/')
 
 @app.route('/add_team', methods=['POST'])
 def addTeam():
@@ -129,7 +140,54 @@ def addTeam():
         return render_template('add-team.html', 
               user_info=user_info, info_message="Team added Succesfully!")
 
+@app.route('/query_driver', methods=['GET'])
+def queryDriverPage():
+    id_token = request.cookies.get("token")
+    claims = None
+    user_info = None
+    error_message = None
+    result = None
+    if id_token:
+        try:
+            claims = google.oauth2.id_token.verify_firebase_token(id_token,
+                    firebase_request_adapter)
+            user_info = retrieveUserInfo(claims)
+        except ValueError as exc:
+            error_message = str(exc)
 
+    return render_template('query-driver.html', 
+            error_message=error_message,
+            user_info=user_info)
+
+@app.route('/query_driver', methods=['Post'])
+def queryDriver():
+    id_token = request.cookies.get("token")
+    claims = None
+    user_info = None
+    error_message = None
+    result = None
+    if id_token:
+        try:
+            claims = google.oauth2.id_token.verify_firebase_token(id_token,
+                    firebase_request_adapter)
+            user_info = retrieveUserInfo(claims)
+        except ValueError as exc:
+            error_message = str(exc)
+
+    query = datastore_client.query(kind='Teams')
+    query.add_filter('name', '=', request.form['name'])
+    query.add_filter('age', '>=', request.form['age'])
+    #query.add_filter('pole_position', '>=', request.form['pole_position'])
+    #query.add_filter('wins', '>=', request.form['wins'])
+    #query.add_filter('titles', '>=', request.form['titles'])
+    #query.add_filter('fastest_laps', '>=', request.form['fastest_laps'])
+    #query.add_filter('team', '=', request.form['team'])
+    result = query.fetch()
+
+    return render_template('query-driver.html', 
+            error_message=error_message,
+            user_info=user_info,
+            result=result)
 
 @app.route("/")
 def root():
