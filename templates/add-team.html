@@ -11,6 +11,15 @@
 	</head>
 	<body>
 		<h1> Welcome to Formula1 </h1>
+
+		{% with messages = get_flashed_messages() %}
+		{% if messages %}
+			{% for message in messages %}
+			<p style="background-color:Tomato;"> {{ message }} </p> 
+			{% endfor %}
+		{% endif %}
+		{% endwith %}
+
 		<div id="firebase-auth-container"></div>
 		<button id="sign-out" hidden="true" >Sign out</button>
 		<button id="homepage" onclick="document.location='/'"> homepage </button>
@@ -33,9 +42,6 @@
 			titles:			<input type="number" name="titles"/><br/>
 			finish_position:	<input type="number" name="finish_position"/><br/>
 					<input type="submit" name="button"/>
-			{% if info_message %}
-			<p> {{ info_message}} </p>
-			{% endif %}
 			</form>
 		</div>
 		<div id="teams-list">

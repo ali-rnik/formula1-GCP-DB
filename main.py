@@ -29,28 +29,7 @@ def createUserInfo(claims):
         }) 
     datastore_client.put(entity)
 
-
-@app.route('/add_driver', methods=['GET'])
-def addDriverPage():
-    id_token = request.cookies.get("token")
-    claims = None
-    user_info = None
-    error_message = None
-    if id_token:
-        try:
-            claims = google.oauth2.id_token.verify_firebase_token(id_token,
-                    firebase_request_adapter)
-            user_info = retrieveUserInfo(claims)
-        except ValueError as exc:
-            error_message = str(exc)
-
-        return render_template('add-driver.html', 
-                error_message=error_message,
-                user_info=user_info)
-    flash('Please Login First')
-    return redirect('/')
-
-@app.route('/add_driver', methods=['POST'])
+@app.route('/add_driver', methods=['POST', 'GET'])
 def addDriver():
     id_token = request.cookies.get("token")
     claims = None
@@ -61,53 +40,38 @@ def addDriver():
         try:
             claims = google.oauth2.id_token.verify_firebase_token(id_token,
                     firebase_request_adapter)
-            query = datastore_client.query(kind='Drivers')
-            query.add_filter('name', '=', request.form['name'])
-            result = list(query.fetch())
-            print(result);
-            if result != []:
-                return render_template('add-driver.html', 
-                        user_info=user_info, info_message="Driver Already added!")
-
-            entity_key = datastore_client.key('Drivers', request.form['name'])
-            entity = datastore.Entity(key=entity_key)
-            entity.update({
-                'name': request.form['name'],
-                'age': request.form['age'],           
-                'pole_position': request.form['pole_position'],
-                'wins': request.form['wins'],
-                'points' : request.form['points'],
-                'titles': request.form['titles'],
-                'fastest_laps': request.form['fastest_laps'],
-                'team': request.form['team']})
-            datastore_client.put(entity)
-        except ValueError as exc:
-            error_message = str(exc)
-        return render_template('add-driver.html', 
-                user_info=user_info, info_message="Driver added Succesfully!")
-
-@app.route('/add_team', methods=['GET'])
-def addTeamPage():
-    id_token = request.cookies.get("token")
-    claims = None
-    user_info = None
-    error_message = None
-    if id_token:
-        try:
-            claims = google.oauth2.id_token.verify_firebase_token(id_token,
-                    firebase_request_adapter)
             user_info = retrieveUserInfo(claims)
+            if (request.method == 'POST'):
+                query = datastore_client.query(kind='Drivers')
+                query.add_filter('name', '=', request.form['name'])
+                result = list(query.fetch())
+                print(result);
+                if result != []:
+                    flash('Driver Already Exist!')
+                    return redirect('/add_driver')
+                entity_key = datastore_client.key('Drivers', request.form['name'])
+                entity = datastore.Entity(key=entity_key)
+                entity.update({
+                    'name': request.form['name'],
+                    'age': request.form['age'],           
+                    'pole_position': request.form['pole_position'],
+                    'wins': request.form['wins'],
+                    'points' : request.form['points'],
+                    'titles': request.form['titles'],
+                    'fastest_laps': request.form['fastest_laps'],
+                    'team': request.form['team']})
+                datastore_client.put(entity)
+                flash('Driver added Successfully!')
+                return redirect('/add_driver')
+            return render_template('add-driver.html', 
+                user_info=user_info, error_messasge=error_message)
         except ValueError as exc:
             error_message = str(exc)
-
-        return render_template('add-team.html', 
-                error_message=error_message,
-                user_info=user_info)
-
     flash('Please Login First')
     return redirect('/')
 
-@app.route('/add_team', methods=['POST'])
+
+@app.route('/add_team', methods=['POST', 'GET'])
 def addTeam():
     id_token = request.cookies.get("token")
     claims = None
@@ -118,27 +82,34 @@ def addTeam():
         try:
             claims = google.oauth2.id_token.verify_firebase_token(id_token,
                     firebase_request_adapter)
-            query = datastore_client.query(kind='Teams')
-            query.add_filter('name', '=', request.form['name'])
-            result = list(query.fetch())
-            if result != []:
-                return render_template('add-team.html', 
-                        user_info=user_info, info_message="Team Already added!")
-
-            entity_key = datastore_client.key('Teams', request.form['name'])
-            entity = datastore.Entity(key=entity_key)
-            entity.update({
-                'name': request.form['name'],
-                'year_fnd': request.form['year_fnd'],           
-                'pole_position': request.form['pole_position'],
-                'wins': request.form['wins'],
-                'titles': request.form['titles'],
-                'finish_position': request.form['finish_position']})
-            datastore_client.put(entity)
+            user_info = retrieveUserInfo(claims)
+            if (request.method == 'POST'):
+                query = datastore_client.query(kind='Teams')
+                query.add_filter('name', '=', request.form['name'])
+                result = list(query.fetch())
+                if result != []:
+                    flash('Team Already Exist!')
+                    return redirect('/add_team')
+                entity_key = datastore_client.key('Teams', request.form['name'])
+                entity = datastore.Entity(key=entity_key)
+                entity.update({
+                    'name': request.form['name'],
+                    'year_fnd': request.form['year_fnd'],           
+                    'pole_position': request.form['pole_position'],
+                    'wins': request.form['wins'],
+                    'titles': request.form['titles'],
+                    'finish_position': request.form['finish_position']})
+                datastore_client.put(entity)
+                flash('Team added Succesfully!')
+                return redirect('/add_team')
+            return render_template('add-team.html', 
+                user_info=user_info, error_message=error_message)
         except ValueError as exc:
             error_message = str(exc)
-        return render_template('add-team.html', 
-              user_info=user_info, info_message="Team added Succesfully!")
+    flash('Please Login First')
+    return redirect('/')
+
+
 
 @app.route('/query_driver', methods=['GET'])
 def queryDriverPage():
@@ -175,8 +146,8 @@ def queryDriver():
             error_message = str(exc)
 
     query = datastore_client.query(kind='Teams')
-    query.add_filter('name', '=', request.form['name'])
-    query.add_filter('age', '>=', request.form['age'])
+    query.add_filter('name', '>=', request.form['name'])
+    #query.add_filter('age', '>=', request.form['age'])
     #query.add_filter('pole_position', '>=', request.form['pole_position'])
     #query.add_filter('wins', '>=', request.form['wins'])
     #query.add_filter('titles', '>=', request.form['titles'])
