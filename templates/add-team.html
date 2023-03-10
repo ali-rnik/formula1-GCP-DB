@@ -1,58 +1,28 @@
 <!doctype html>
 <html>
-	<head>
-		<title>Formula1 Statistics</title>
-		<script src="{{ url_for('static', filename='script.js') }}"></script>
-		<link type="text/css" rel="stylesheet" href="{{ url_for('static',
-			    filename='style.css') }}">
-		<script src="https://www.gstatic.com/firebasejs/ui/4.4.0/firebase-ui-auth.js"></script>
-		<link type="text/css" rel="stylesheet"
-				      href="https://www.gstatic.com/firebasejs/ui/4.4.0/firebase-ui-auth.css" />
-	</head>
+	{% set page="Add Team" %}
+	{% include 'head.html' %}
 	<body>
 		<h1> Welcome to Formula1 </h1>
 
-		{% with messages = get_flashed_messages() %}
-		{% if messages %}
-			{% for message in messages %}
-			<p style="background-color:Tomato;"> {{ message }} </p> 
-			{% endfor %}
-		{% endif %}
-		{% endwith %}
+		{% include 'flash_messages.html' %}
 
 		<div id="firebase-auth-container"></div>
-		<button id="sign-out" hidden="true" >Sign out</button>
-		<button id="homepage" onclick="document.location='/'"> homepage </button>
-		<div id="login-info" hidden="true">
-			<h2>Login Info</h2>
-			{% if user_info %}
-			<dl>
-				<dt>Hello Dear: </dt><dd>{{ user_info['email'] }}</dd>
-			</dl>
-			{% elif error_message %}
-			<p>Error Message: {{ error_message }}</p>
-			{% endif %}
-		</div>	
+
+		{% include 'login-info.html' %}
+		{% include 'non-user-actions.html' %}
+
+		<div id="firebase-auth-container"></div>
+
+
+		<p style="background-color:Tomato;"> {{ page }} </p> 
 		<div id="add-team">
 			<form action="/add_team" method="post">
-			name: 			<input type="text" name="name"/><br/>
-			year_fnd: 		<input type="number" name="year_fnd"/><br/>
-			pole_position:  	<input type="number" name="pole_position"/><br/>
-			wins: 			<input type="number" name="wins"/><br/>
-			titles:			<input type="number" name="titles"/><br/>
-			finish_position:	<input type="number" name="finish_position"/><br/>
-					<input type="submit" name="button"/>
+				{% for elem in data.team_att %}
+				{{ elem.0 }}: <input type="{{ elem.1 }}" name="{{ elem.0 }}"/><br/>
+				{% endfor %}
+				<input type="submit" name="button"/>
 			</form>
 		</div>
-		<div id="teams-list">
-			{% for team in teams %}
-			{{team.name}} <br>
-			{{team.year_fnd}} <br>
-			<br><br>
-			{% endfor %}
-		</div>
 	</body>
-	<script src="https://www.gstatic.com/firebasejs/7.14.5/firebase-app.js"></script>
-	<script src="https://www.gstatic.com/firebasejs/7.8.0/firebase-auth.js"></script>
-	<script src="{{ url_for('static', filename='app-setup.js') }}"></script>
 </html>

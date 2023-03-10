@@ -1,42 +1,14 @@
 <!doctype html>
 <html>
-	<head>
-		<title>Formula1 Statistics</title>
-		<script src="{{ url_for('static', filename='script.js') }}"></script>
-		<link type="text/css" rel="stylesheet" href="{{ url_for('static',
-			    filename='style.css') }}">
-		<script src="https://www.gstatic.com/firebasejs/ui/4.4.0/firebase-ui-auth.js"></script>
-		<link type="text/css" rel="stylesheet"
-				      href="https://www.gstatic.com/firebasejs/ui/4.4.0/firebase-ui-auth.css" />
-	</head>
+	{% include 'head.html' %}
 	<body>
 		<h1> Welcome to Formula1 </h1>
 
-		{% with messages = get_flashed_messages() %}
-		{% if messages %}
-			{% for message in messages %}
-			<p style="background-color:Tomato;"> {{ message }} </p> 
-			{% endfor %}
-		{% endif %}
-		{% endwith %}
+		{% include 'flash_messages.html' %}
 
 		<div id="firebase-auth-container"></div>
-		<button id="sign-out" hidden="true" >Sign out</button>
-		<button id="add-driver" onclick="document.location='add_driver'"> Add driver </button>
-		<button id="add-team"  onclick="document.location='add_team'"> Add team </button>
-		<button id="query-driver" onclick="document.location='query_driver'"> Query driver </button>
-		<div id="login-info" hidden="true">
-			<h2>Login Info</h2>
-			{% if user_info %}
-			<dl>
-				<dt>Hello Dear: </dt><dd>{{ user_info['email'] }}</dd>
-			</dl>
-			{% elif error_message %}
-			<p>Error Message: {{ error_message }}</p>
-			{% endif %}
-		</div>	
+		{% include 'login-info.html' %}
+		{% include 'non-user-actions.html' %}
+
 	</body>
-	<script src="https://www.gstatic.com/firebasejs/7.14.5/firebase-app.js"></script>
-	<script src="https://www.gstatic.com/firebasejs/7.8.0/firebase-auth.js"></script>
-	<script src="{{ url_for('static', filename='app-setup.js') }}"></script>
 </html>
