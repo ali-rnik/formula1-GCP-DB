@@ -1,6 +1,6 @@
 <!doctype html>
+
 <html>
-	{% set page="Add Team" %}
 	{% include 'head.html' %}
 	<body>
 		<h1> Welcome to Formula1 </h1>
@@ -14,13 +14,14 @@
 
 		<div id="firebase-auth-container"></div>
 
-
-		<p style="background-color:Tomato;"> {{ page }} </p> 
-		<div id="add-team">
-			<form action="/add_team" method="post">
-				{% for elem in data.team_att %}
+		<p style="background-color:Tomato;"> Add {{ kind }} </p> 
+		<div id="add-{{kind}}">
+			<form action="/add/{{kind}}" method="post">
+				{% if data %}
+				{% for elem in data %}
 				{{ elem.0 }}: <input type="{{ elem.1 }}" name="{{ elem.0 }}"/><br/>
 				{% endfor %}
+				{% endif %}
 				<input type="submit" name="button"/>
 			</form>
 		</div>

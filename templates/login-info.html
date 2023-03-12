@@ -2,15 +2,15 @@
 	<h2>Login Info</h2>
 	{% if user_info %}
 	<dl>
-		<dt>Hello Dear: </dt><dd>{{ user_info['email'] }}</dd>
+		Hello Dear: {{ user_info['email'] }}
 	</dl>
 	{% elif error_message %}
 	<p>Error Message: {{ error_message }}</p>
 	{% endif %}
 
 	<button id="sign-out" hidden="true" >Sign out</button>
-	<button id="add-driver" onclick="document.location='add_driver'"> Add driver </button>
-	<button id="add-team"  onclick="document.location='add_team'"> Add team </button>
+	<button id="add-driver" onclick="document.location='/add/driver'"> Add driver </button>
+	<button id="add-team"  onclick="document.location='/add/team'"> Add team </button>
 	<button id="homepage" onclick="document.location='/'"> Formule One! </button>
 
 </div>	

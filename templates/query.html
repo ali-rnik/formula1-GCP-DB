@@ -1,0 +1,60 @@
+<!doctype html>
+
+<style>
+table, th, td {
+	border:1px solid black;
+}
+</style>
+
+<html>
+	{% include 'head.html' %}
+	<body>
+		<h1> Welcome to Formula1 </h1>
+
+		{% include 'flash_messages.html' %}
+
+		<div id="firebase-auth-container"></div>
+
+		{% include 'login-info.html' %}
+		{% include 'non-user-actions.html' %}
+
+		<p style="background-color:Tomato;"> Query Page </p> 
+		<div id="query-menu">
+			<form action="/query" method="post">
+				<select name="query_key" id="query_key">
+					{% for elem in data.driver_att %}
+					<option value="Drivers.{{ elem.0 }}"> Drivers.{{ elem.0 }}</option>
+					{% endfor %}
+					{% for elem in data.team_att %}
+					<option value="Teams.{{ elem.0 }}"> Teams.{{ elem.0 }}</option>
+					{% endfor %}
+				</select>
+				Should Be bigger than: <input type="text" name="query_value"/><br/>
+				<input type="submit" name="button"/>
+			</form>
+		</div>
+		{% if result %}
+		<p> Query on {{ result.kind }} and found {{ result.count }} items. </p>
+		<table style="width:100%">
+			<tr>
+				{% for h in result['items'][0] %}
+				<th>{{h[0]}}</th>
+				{% endfor %}
+			</tr>
+			{% for list in result['items'] %}
+			<tr>
+				{% for elem in list %}
+				{% if elem[0] == 'name' %}
+				<td><a href="google.com">{{ elem[1] }} </a></td>
+				{% else %}
+				<td>{{ elem[1] }} </td>
+				{% endif %}
+				{% endfor %}
+			</tr>
+			{% endfor %}
+			{% endif %}
+		</table>
+
+	</body>
+</html>
+<!-- <input type="submit" name="delete row" id="result.kind-elem[0]"> -->

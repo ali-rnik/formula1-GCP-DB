@@ -1,5 +1,6 @@
 import datetime
 import random
+import time
 from google.cloud import datastore
 import google.oauth2.id_token
 from flask import Flask, render_template, request, redirect, flash
@@ -32,69 +33,36 @@ def createUserInfo(claims):
         }) 
     datastore_client.put(entity)
 
-@app.route('/add_driver', methods=['POST', 'GET'])
-def addDriver():
+@app.route('/add/<kind>', methods=['POST', 'GET'])
+def add(kind):
     id_token = request.cookies.get("token")
     claims = None
     user_info = None
     error_message = None
-    if id_token:
-        try:
-            claims = google.oauth2.id_token.verify_firebase_token(id_token,
-                    firebase_request_adapter)
-            user_info = retrieveUserInfo(claims)
-            if (request.method == 'POST'):
-                query = datastore_client.query(kind='Drivers')
-                query.add_filter('name', '=', request.form['name'])
-                result = list(query.fetch())
-                if result != []:
-                    flash('Driver Already Exist!')
-                    return redirect('/add_driver')
-                entity_key = datastore_client.key('Drivers', claims['name'])
-                entity = datastore.Entity(key=entity_key)
-                obj = dict()
-                for elems in driver_att:
-                    obj[elems[0]] = request.form[elems[1]];
-                entity.update(obj)    
-                datastore_client.put(entity)
-                flash('Driver added Successfully!')
-                return redirect('/add_driver')
-            return render_template('add-driver.html', 
-                    user_info=user_info, error_messasge=error_message, data=att_list)
-        except ValueError as exc:
-            error_message = str(exc)
-    flash('Please Login First')
-    return redirect('/')
 
-@app.route('/add_team', methods=['POST', 'GET'])
-def addTeam():
-    id_token = request.cookies.get("token")
-    claims = None
-    user_info = None
-    error_message = None
     if id_token:
         try:
             claims = google.oauth2.id_token.verify_firebase_token(id_token,
                     firebase_request_adapter)
             user_info = retrieveUserInfo(claims)
             if (request.method == 'POST'):
-                query = datastore_client.query(kind='Teams')
+                query = datastore_client.query(kind=kind)
                 query.add_filter('name', '=', request.form['name'])
                 result = list(query.fetch())
                 if result != []:
-                    flash('Team Already Exist!')
-                    return redirect('/add_team')
-                entity_key = datastore_client.key('Teams', request.form['name'])
+                    flash(kind + ' Already Exist!')
+                    return redirect('/add/'+kind)
+                entity_key = datastore_client.key(kind, request.form['name'])
                 entity = datastore.Entity(key=entity_key)
                 obj = dict()
-                for elems in team_att:
-                    obj[elems[0]] = request.form[elems[1]];
+                for elems in att_list[kind+"_att"]:
+                    obj[elems[0]] = request.form[elems[0]];
                 entity.update(obj)
                 datastore_client.put(entity)
-                flash('Team added Succesfully!')
-                return redirect('/add_team')
-            return render_template('add-team.html', 
-                    user_info=user_info, error_message=error_message, data=att_list)
+                flash(kind + ' added Succesfully!')
+                return redirect('/add/'+kind)
+            return render_template('add.html', 
+                    user_info=user_info, error_message=error_message, data=att_list[kind+"_att"], kind=kind)
         except ValueError as exc:
             error_message = str(exc)
     flash('Please Login First')
@@ -112,53 +80,34 @@ def query():
             claims = google.oauth2.id_token.verify_firebase_token(id_token,
                     firebase_request_adapter)
             user_info = retrieveUserInfo(claims)
-            if (request.method == 'POST'):
-                query = datastore_client.query(kind='Drivers')
-                query_key = request.form['query_key']
-                query.add_filter(query_key, '>=', request.form['query_value'])
-                result = list(query.fetch())
-                if result != []:
-                    return render_template('query-driver.html', 
-                            user_info=user_info, error_message=error_message, result=result)
-
-                flash('No data available for that query!')
-                return redirect('/query_driver')
-            return render_template('query-driver.html', 
-                    user_info=user_info, error_message=error_message)
         except ValueError as exc:
             error_message = str(exc)
-    return render_template('query-driver.html', 
-            user_info=user_info, error_message=error_message)
 
-@app.route('/query_team', methods=['POST', 'GET'])
-def queryTeam():
-    id_token = request.cookies.get("token")
-    claims = None
-    user_info = None
-    error_message = None
-    result = None
-    if id_token:
-        try:
-            claims = google.oauth2.id_token.verify_firebase_token(id_token,
-                    firebase_request_adapter)
-            user_info = retrieveUserInfo(claims)
-            if (request.method == 'POST'):
-                query = datastore_client.query(kind='Teams')
-                query_key = request.form['query_key']
-                query.add_filter(query_key, '>=', request.form['query_value'])
-                result = list(query.fetch())
-                if result != []:
-                    return render_template('query-team.html', 
-                            user_info=user_info, error_message=error_message, result=result)
+    if (request.method == 'POST'):
+        query_key = request.form['query_key'].split(".");
+        query = datastore_client.query(kind=query_key[0])
+        query.add_filter(query_key[1], '>=', request.form['query_value'])
+        result = list(query.fetch())
+        if result != []:
+            result_map = {};
+            result_map['kind'] = result[0].kind;
+            result_map['items'] = [];
+            for item in result:
+                    item_sorted = sorted(list(item.items()), key= lambda x: x[0])
+                    result_map['items'].append(sorted(item_sorted, key=lambda x: x[0] != 'name'));
+            result_map['count'] = len(result_map['items']);
+        
+            return render_template('query.html', 
+                    user_info=user_info, error_message=error_message, result=result_map, data=att_list)
 
-                flash('No data available for that query!')
-                return redirect('/query_team')
-            return render_template('query-team.html', 
-                    user_info=user_info, error_message=error_message)
-        except ValueError as exc:
-            error_message = str(exc)
-    return render_template('query-team.html', 
-            user_info=user_info, error_message=error_message)
+        flash('No data available for that query!')
+        return redirect('/query')
+    return render_template('query.html', 
+               user_info=user_info, error_message=error_message, data=att_list)
+
+
+    return render_template('query.html', 
+            user_info=user_info, error_message=error_message, data=att_list)
 
 @app.route("/")
 def root():
@@ -169,8 +118,8 @@ def root():
     if id_token:
         try:
             claims = google.oauth2.id_token.verify_firebase_token(id_token,
-                    firebase_request_adapter)
-            user_info = retrieveUserInfo(claims)
+                    firebase_request_adapter, clock_skew_in_seconds=3)
+
             if user_info == None:
                 createUserInfo(claims)
                 user_info = retrieveUserInfo(claims)
