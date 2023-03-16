@@ -1,3 +1,12 @@
+<button id="popup-firebase" hidden="false" onclick='makeVis("firebase-auth-container")'> Sign-in </button>
 <button id="query-driver" onclick="document.location='/query'"> Query </button>
+
+<script type="text/javascript">
+	function makeVis(var1) {
+		document.getElementById(var1).hidden = false;
+		document.getElementById("popup-firebase").hidden = true;
+	}
+</script>
+
 
 

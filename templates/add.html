@@ -9,17 +9,16 @@
 
 		<div id="firebase-auth-container"></div>
 
-		{% include 'login-info.html' %}
-		{% include 'non-user-actions.html' %}
+		<span> {% include 'login-info.html' %} {% include 'non-user-actions.html' %} </span>
 
 		<div id="firebase-auth-container"></div>
 
-		<p style="background-color:Tomato;"> Add {{ kind }} </p> 
+		<p style="background-color:Tomato;"> Add {{ db }} </p> 
 		<div id="add-{{kind}}">
 			<form action="/add/{{kind}}" method="post">
 				{% if data %}
-				{% for elem in data %}
-				{{ elem.0 }}: <input type="{{ elem.1 }}" name="{{ elem.0 }}"/><br/>
+				{% for elem in data[kind] %}
+				{{ elem }}: <input type="text" name="{{ elem }}"/><br/>
 				{% endfor %}
 				{% endif %}
 				<input type="submit" name="button"/>

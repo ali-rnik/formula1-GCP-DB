@@ -15,120 +15,135 @@ app.config['SESSION_PERMANENT']= False
 datastore_client = datastore.Client()
 firebase_request_adapter = requests.Request()
 
-driver_att = [('name', 'text'), ('age', 'number'), ('pole-position', 'number'), ('wins', 'number'), ('points', 'number'), ('titles', 'number'), ('fastest-laps', 'number'), ('team', 'number')]
-team_att = [('name', 'text'), ('year-found', 'number'), ('pole-position', 'number'), ('wins', 'number'), ('titles', 'number'), ('finished-position', 'number')]
-att_list = {'driver_att': driver_att, 'team_att': team_att}
+driver_att = ['name', 'age', 'number', 'pole-position', 'wins', 'points', 'titles', 'fastest-laps', 'team']
+team_att = ['name', 'year-found', 'pole-position', 'wins', 'titles', 'finished-position']
+att_list = {'driver': driver_att, 'team': team_att}
 
-def retrieveUserInfo(claims):
-    entity_key = datastore_client.key('UserInfo', claims['email'])
-    entity = datastore_client.get(entity_key)
-    return entity
-
-def createUserInfo(claims):
-    entity_key = datastore_client.key('UserInfo', claims['email'])
-    entity = datastore.Entity(key = entity_key)
-
-    entity.update({
-        'email': claims['email'],
-        }) 
-    datastore_client.put(entity)
-
-@app.route('/add/<kind>', methods=['POST', 'GET'])
-def add(kind):
+def get_session_info():
     id_token = request.cookies.get("token")
     claims = None
-    user_info = None
-    error_message = None
-
+    err_msg = None
     if id_token:
         try:
             claims = google.oauth2.id_token.verify_firebase_token(id_token,
-                    firebase_request_adapter)
-            user_info = retrieveUserInfo(claims)
-            if (request.method == 'POST'):
-                query = datastore_client.query(kind=kind)
-                query.add_filter('name', '=', request.form['name'])
-                result = list(query.fetch())
-                if result != []:
-                    flash(kind + ' Already Exist!')
-                    return redirect('/add/'+kind)
-                entity_key = datastore_client.key(kind, request.form['name'])
-                entity = datastore.Entity(key=entity_key)
-                obj = dict()
-                for elems in att_list[kind+"_att"]:
-                    obj[elems[0]] = request.form[elems[0]];
-                entity.update(obj)
-                datastore_client.put(entity)
-                flash(kind + ' added Succesfully!')
-                return redirect('/add/'+kind)
-            return render_template('add.html', 
-                    user_info=user_info, error_message=error_message, data=att_list[kind+"_att"], kind=kind)
+                    firebase_request_adapter, clock_skew_in_seconds=30)
         except ValueError as exc:
-            error_message = str(exc)
+          err_msg = str(exc)
+          flash(err_msg)
+          return redirect('/error', err_msg);
+
+        return claims
+    return None, None
+
+def row_exist(name, kind):
+    query = datastore_client.query(kind=kind)
+    query.add_filter('name', '=', name)
+    result = list(query.fetch())
+    if result != []:
+        return result
+    return None
+
+def update_row(name, kind):
+    entity_key = datastore_client.key(kind, name)
+    entity = datastore.Entity(key=entity_key)
+    obj = dict()
+    for elem in att_list[kind]:
+        obj[elem] = request.form[elem];
+    entity.update(obj)
+    datastore_client.put(entity)
+    
+def get_query_result(query):
+    result = list(query.fetch())
+    if result == []:
+        return None;
+    result_list = []
+
+    for item in result:
+        result_list.append(item.copy())
+
+    return result_list
+
+@app.route('/add/<kind>', methods=['POST', 'GET'])
+def add(kind):
+    claims = get_session_info();
+    
+    if claims:
+        if request.method == 'POST':
+            if row_exist(request.form['name'], kind) != None:
+                flash('Already Exist!')
+                return redirect('/add/'+kind)
+
+            update_row(request.form['name'], kind)
+            flash('Added Successfully.')
+            return redirect('/add/'+kind)
+
+        return render_template('add.html', 
+            claims=claims, data=att_list, kind=kind)
+
     flash('Please Login First')
     return redirect('/')
 
 @app.route('/query', methods=['POST', 'GET'])
 def query():
-    id_token = request.cookies.get("token")
-    claims = None
-    user_info = None
-    error_message = None
-    result = None
-    if id_token:
-        try:
-            claims = google.oauth2.id_token.verify_firebase_token(id_token,
-                    firebase_request_adapter)
-            user_info = retrieveUserInfo(claims)
-        except ValueError as exc:
-            error_message = str(exc)
+    claims = get_session_info();
+    kind = None
 
     if (request.method == 'POST'):
         query_key = request.form['query_key'].split(".");
-        query = datastore_client.query(kind=query_key[0])
+        kind = query_key[0]
+        query = datastore_client.query(kind=kind)
         query.add_filter(query_key[1], '>=', request.form['query_value'])
-        result = list(query.fetch())
-        if result != []:
-            result_map = {};
-            result_map['kind'] = result[0].kind;
-            result_map['items'] = [];
-            for item in result:
-                    item_sorted = sorted(list(item.items()), key= lambda x: x[0])
-                    result_map['items'].append(sorted(item_sorted, key=lambda x: x[0] != 'name'));
-            result_map['count'] = len(result_map['items']);
+
+        result = get_query_result(query);
+        if not result:
+            flash('No data available for that query!')
+            return redirect('/query')
         
-            return render_template('query.html', 
-                    user_info=user_info, error_message=error_message, result=result_map, data=att_list)
+        return render_template('query.html', 
+            claims=claims, result=result, data=att_list, kind=kind)
 
-        flash('No data available for that query!')
+    return render_template('query.html', claims=claims, data=att_list)
+
+@app.route('/update/<kind>/<name>', methods=['POST', 'GET'])
+def update(kind, name):
+    claims = get_session_info();
+    
+    if not claims:
+        flash('Please Login First')
         return redirect('/query')
-    return render_template('query.html', 
-               user_info=user_info, error_message=error_message, data=att_list)
+    
+    if request.method == 'POST':
+        update_row(name, kind)
+        flash('Updated Successfully')
+        return redirect('/query')
+    
+    query = datastore_client.query(kind=kind)
+    query.add_filter('name', '=', name)
+    
+    result = get_query_result(query)[0]
 
+    return render_template('update.html', 
+        claims=claims, result=result, data=att_list, kind=kind)
 
-    return render_template('query.html', 
-            user_info=user_info, error_message=error_message, data=att_list)
+@app.route('/error')
+def error():
+    return render_template('50x.html')
 
 @app.route("/")
 def root():
     id_token = request.cookies.get("token")
     error_message = None
     claims = None
-    user_info = None
     if id_token:
         try:
             claims = google.oauth2.id_token.verify_firebase_token(id_token,
-                    firebase_request_adapter, clock_skew_in_seconds=3)
-
-            if user_info == None:
-                createUserInfo(claims)
-                user_info = retrieveUserInfo(claims)
+                    firebase_request_adapter, clock_skew_in_seconds=30)
         except ValueError as exc:
             error_message = str(exc)
 
     return render_template('index.html', 
             error_message=error_message,
-            user_info=user_info)
+            claims=claims)
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8080, debug=True)
