@@ -23,14 +23,18 @@ table, th, td {
 			<form action="/update/{{kind}}/{{result['name']}}" method="POST" >
 				{% for elem in data[kind] %}
 				<tr>
+					{% if elem == 'name' %}
+					<th> {{elem}}</th><td>{{result[elem]}}</td>
+					{% else %}
 					<th> {{elem}}</th><td><input type="text" name="{{elem}}" value="{{result[elem]}}"/></td>
+					{% endif %}
 				</tr>
 				{% endfor %}
 		</table>
-
 		<input type="submit" name="button" value="save edits"/>
 			</form>
 
-		{%endif%}
+			<button id="delete-index" onclick="document.location='/delete/{{kind}}/{{result['name']}}'"> Delete {{kind}} </button>
+			{%endif%}
 	</body>
 </html>

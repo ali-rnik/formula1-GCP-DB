@@ -1,0 +1,61 @@
+<!doctype html>
+
+<style>
+table, th, td {
+	border:1px solid black;
+}
+
+#up {
+	background-color: lightgreen;
+}
+	
+#tie {
+	background-color: yellow;
+}
+
+</style>
+
+<html>
+	{% include 'head.html' %}
+	<body>
+		<h1> Welcome to Formula1 </h1>
+
+		{% include 'flash_messages.html' %}
+
+		<div id="firebase-auth-container" hidden="true"></div></br>
+
+
+		<span> {% include 'login-info.html' %} {% include 'non-user-actions.html' %} </span>
+
+		<p style="background-color:#ffa500;"> Compare Page </p> 
+
+		<form action="/compare" method="post">
+			Compare: <select name="compare-kind" id="compare-kind">
+				{% for elem in data.keys() %}
+				<option value="{{elem}}"> {{ elem }}</option>
+				{% endfor %}
+			</select> </br>
+			name1: <input type="text" name="name1"/>
+			name2: <input type="text" name="name2"/>
+			</br>
+			<input type="submit" name="button"/>
+		</form>
+
+		{% if retreived %}
+		<table style="width:100%">
+
+			{% for elem in data[kind] %}
+			{% if elem == 'name' %}
+			<tr> <th> NAME </th><th> {{retreived[0][elem].0}} </th> <th> {{retreived[1][elem].0}} </th> </tr>
+			{% else %}
+			<tr>
+				<th>{{elem}}</th>
+				<td id={{retreived[0][elem].1}}> {{retreived[0][elem].0}} </td>
+				<td id={{retreived[1][elem].1}}> {{retreived[1][elem].0}} </td>
+			</tr>
+			{% endif %}
+			{% endfor %}
+		</table>
+		{% endif %}
+	</body>
+</html>
