@@ -1,40 +1,28 @@
 <!doctype html>
-
-<style>
-table, th, td {
-	border:1px solid black;
-}
-</style>
-
 <html>
 	{% include 'head.html' %}
 	<body>
-		<h1> Welcome to Formula1 </h1>
+		{% include 'navbar.html' %}
+		<div class="container">
+			{% if result %}
+			<p> Edit {{ kind }} </p>
+			<table style="width:100%">
+				<form action="/update/{{kind}}/{{result['name']}}" method="POST" >
+					{% for elem in data[kind] %}
+					<tr>
+						{% if elem == 'name' %}
+						<th> {{elem}}</th><td>{{result[elem]}}</td>
+						{% else %}
+						<th> {{elem}}</th><td><input type="text" name="{{elem}}" value="{{result[elem]}}"/></td>
+						{% endif %}
+					</tr>
+					{% endfor %}
+			</table>
+			<input type="submit" name="button" value="save edits"/>
+				</form>
 
-		{% include 'flash_messages.html' %}
-
-		<div id="firebase-auth-container" hidden="true"></div></br>
-
-		<span> {% include 'login-info.html' %} {% include 'non-user-actions.html' %} </span>
-
-		{% if result %}
-		<p> Edit {{ kind }} </p>
-		<table style="width:100%">
-			<form action="/update/{{kind}}/{{result['name']}}" method="POST" >
-				{% for elem in data[kind] %}
-				<tr>
-					{% if elem == 'name' %}
-					<th> {{elem}}</th><td>{{result[elem]}}</td>
-					{% else %}
-					<th> {{elem}}</th><td><input type="text" name="{{elem}}" value="{{result[elem]}}"/></td>
-					{% endif %}
-				</tr>
-				{% endfor %}
-		</table>
-		<input type="submit" name="button" value="save edits"/>
-			</form>
-
-			<button id="delete-index" onclick="document.location='/delete/{{kind}}/{{result['name']}}'"> Delete {{kind}} </button>
-			{%endif%}
+				<button id="delete-index" onclick="document.location='/delete/{{kind}}/{{result['name']}}'"> Delete {{kind}} </button>
+				{%endif%}
+		</div>
 	</body>
 </html>

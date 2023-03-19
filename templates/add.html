@@ -3,25 +3,16 @@
 <html>
 	{% include 'head.html' %}
 	<body>
-		<h1> Welcome to Formula1 </h1>
+		{% include 'navbar.html' %}
 
-		{% include 'flash_messages.html' %}
-
-		<div id="firebase-auth-container"></div>
-
-		<span> {% include 'login-info.html' %} {% include 'non-user-actions.html' %} </span>
-
-		<div id="firebase-auth-container"></div>
-
-		<p style="background-color:#ffa500;"> Add {{ kind }} </p> 
-		<div id="add-{{kind}}">
+		<div class="container" id="add-{{kind}}">
 			<form action="/add/{{kind}}" method="post">
 				{% if data %}
 				{% for elem in data[kind] %}
 				{{ elem }}: <input type="text" name="{{ elem }}"/><br/>
 				{% endfor %}
 				{% endif %}
-				<input type="submit" name="button"/>
+				<input type="submit" name="button" value="Add {{kind}}"/>
 			</form>
 		</div>
 	</body>
