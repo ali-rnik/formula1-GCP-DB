@@ -36,7 +36,7 @@ body {
 
 #snackbar {
 	height: 50px;
-	background-color: #adff2f;
+	background-color: #009A44;
 	color: #000;
 	text-align: center;
 	position: fixed;
@@ -46,7 +46,7 @@ body {
 
 .topnav {
 	overflow: hidden;
-	background-color: Orange;
+	background-color: #FF8200;
 	opacity: 0.6;
 }
 
@@ -60,7 +60,7 @@ body {
 }
 
 .topnav a:hover {
-	background-color: #ddd;
+	background-color: #009A44;
 	color: black;
 }
 

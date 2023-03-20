@@ -46,7 +46,7 @@ def get_session_info():
 	err_msg = None
 	if id_token:
 		try:
-			claims = google.oauth2.id_token.verify_firebase_token(id_token, firebase_request_adapter)
+			claims = google.oauth2.id_token.verify_firebase_token(id_token, firebase_request_adapter, clock_skew_in_seconds=20)
 		except ValueError as exc:
 			err_msg = str(exc)
 			return flash_redirect(err_msg, '/error')
@@ -113,17 +113,22 @@ def priority_taging(retreived, kind):
 
 
 def tag_returner(a, b, col):
+	if a == '':
+		a = '0';
+	if b == '':
+		b = '0'
+
 	lower_better = ["age", "finished-position", "year-found"]
 	if col == "team" or col == "name":
 		return "", ""
 	if col in lower_better:
-		if int(a) > int(b):
+		if int(a, 36) > int(b, 36):
 			return "down", "up"
 		elif a == b:
 			return "tie", "tie"
 		else:
 			return "up", "down"
-	if int(a) > int(b):
+	if int(a, 36) > int(b, 36):
 		return "up", "down"
 	elif a == b:
 		return "tie", "tie"

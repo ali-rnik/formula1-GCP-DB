@@ -18,7 +18,7 @@ window.addEventListener('load', function () {
 			document.getElementById('user-info').hidden = false;
 			document.getElementById('popup-firebase').hidden = true;
 			user.getIdToken().then(function(token) {
-				document.cookie = "token=" + token;
+				document.cookie = "token=" + token + ";path=/";
 			});
 		} else {
 			var ui = new firebaseui.auth.AuthUI(firebase.auth());
@@ -26,7 +26,8 @@ window.addEventListener('load', function () {
 			document.getElementById('sign-out').hidden = true;
 			document.getElementById('user-info').hidden = true;
 			document.getElementById('popup-firebase').hidden = false;
-			document.cookie = "token=";
+
+			document.cookie = "token=;path=/";
 		}
 	}, function(error) {
 		console.log(error);
