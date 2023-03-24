@@ -40,16 +40,19 @@ def flash_redirect(message, path):
 	flash(message)
 	return redirect(path)
 
+
 def get_session_info():
 	id_token = request.cookies.get("token")
 	claims = None
 	err_msg = None
 	if id_token:
 		try:
-			claims = google.oauth2.id_token.verify_firebase_token(id_token, firebase_request_adapter, clock_skew_in_seconds=20)
+			claims = google.oauth2.id_token.verify_firebase_token(
+					id_token, firebase_request_adapter, clock_skew_in_seconds=20
+					)
 		except ValueError as exc:
 			err_msg = str(exc)
-			return flash_redirect(err_msg, '/error')
+			return flash_redirect(err_msg, "/error")
 		return claims
 	return None
 
@@ -87,6 +90,8 @@ def delete_row(kind, name):
 
 
 def query_result(key, comp, val, kind):
+	if key == '' or comp == '' or kind == '':
+		return [None]
 	query = datastore_client.query(kind=kind)
 	query.add_filter(key, comp, val)
 	result = list(query.fetch())
@@ -106,17 +111,14 @@ def priority_taging(retreived, kind):
 				retreived[1][elem],
 				tag2,
 				)
-	print(retreived[0], "\n")
-	print(retreived[1])
-
 	return retreived
 
 
 def tag_returner(a, b, col):
-	if a == '':
-		a = '0';
-	if b == '':
-		b = '0'
+	if a == "":
+		a = "0"
+	if b == "":
+		b = "0"
 
 	lower_better = ["age", "finished-position", "year-found"]
 	if col == "team" or col == "name":
@@ -135,36 +137,56 @@ def tag_returner(a, b, col):
 	else:
 		return "down", "up"
 
+def projection_on(kind, prop):
+	query = datastore_client.query(kind=kind)
+	query.projection = [prop]
+	prop_list = []
+
+	for p in query.fetch():
+		prop_list.append(p[prop])
+
+	return prop_list
 
 @app.route("/add/<kind>", methods=["POST", "GET"])
 def add(kind):
 	claims = get_session_info()
-	print(claims)
 	if claims:
 		if request.method == "POST":
+			if request.form['name'] == '':
+				return flash_redirect("Name Field Can Not Be Empty!", "/add/" + kind)
 			if retrieve_row(kind, request.form["name"]) != None:
-				return flash_redirect("Already Exist!", "/add/"+kind)
+				return flash_redirect("Already Exist!", "/add/" + kind)
 
 			create_row(kind, request.form["name"])
-			return flash_redirect("Added Successfully.", "/add/"+kind)
+			return flash_redirect("Added Successfully.", "/add/" + kind)
 
-		return render_template("add.html", claims=claims, data=att_list, kind=kind, pagename="Add "+kind)
+		return render_template(
+				"add.html", claims=claims, data=att_list, kind=kind, pagename="Add " + kind
+				)
 	return flash_redirect("Please Login First", "/")
+
 
 @app.route("/query", methods=["POST", "GET"])
 def query():
 	claims = get_session_info()
 
 	if request.method == "GET":
-		return render_template("query.html", claims=claims, data=att_list, pagename="Query Page")
+		return render_template(
+				"query.html", claims=claims, data=att_list, pagename="Query Page"
+				)
 
 	query_key = request.form["query_key"].split(".")
 	result = query_result(query_key[1], ">=", request.form["query_value"], query_key[0])
 	if result[0] == None:
-		return flash_redirect("No data available for the Query", "/query");
+		return flash_redirect("No data available for the Query", "/query")
 
 	return render_template(
-			"query.html", claims=claims, result=result, data=att_list, kind=query_key[0], pagename="Query Page"
+			"query.html",
+			claims=claims,
+			result=result,
+			data=att_list,
+			kind=query_key[0],
+			pagename="Query Page",
 			)
 
 
@@ -173,10 +195,16 @@ def compare():
 	claims = get_session_info()
 	kind = None
 	result = None
+	dd_data = {}
 	pagename = "Compare Page"
 
+	dd_data["team"] = projection_on("team", "name")
+	dd_data["driver"] = projection_on("driver", "name")
+
 	if request.method == "GET":
-		return render_template("compare.html", claims=claims, data=att_list, pagename=pagename)
+		return render_template(
+				"compare.html", claims=claims, data=att_list, pagename=pagename, dd_data=dd_data
+				)
 
 	retreived = []
 	retreived.append(
@@ -195,7 +223,7 @@ def compare():
 			or retreived[1] == None
 			or retreived[0]["name"] == retreived[1]["name"]
 			):
-		return flash_redirect("Oooops! Wrong Comparison", "/compare");
+		return flash_redirect("Oooops! Wrong Comparison", "/compare")
 
 	retreived = priority_taging(retreived, request.form["compare-kind"])
 	return render_template(
@@ -204,7 +232,8 @@ def compare():
 			data=att_list,
 			retreived=retreived,
 			kind=request.form["compare-kind"],
-			pagename=pagename
+			pagename=pagename,
+			dd_data=dd_data
 			)
 
 
@@ -213,15 +242,20 @@ def update(kind, name):
 	claims = get_session_info()
 
 	if not claims:
-		return flash_redirect("Please Login First", "/query");
+		return flash_redirect("Please Login First", "/query")
 
 	if request.method == "POST":
 		update_row(kind, name)
-		return flash_redirect("Updated Successfully", "/query");
+		return flash_redirect("Updated Successfully", "/query")
 
 	result = retrieve_row(kind, name)
 	return render_template(
-			"update.html", claims=claims, result=result, data=att_list, kind=kind, pagename="Update Page"
+			"update.html",
+			claims=claims,
+			result=result,
+			data=att_list,
+			kind=kind,
+			pagename="Update Page",
 			)
 
 
@@ -230,10 +264,10 @@ def delete(kind, name):
 	claims = get_session_info()
 
 	if not claims:
-		return flash_redirect("Please Login First", "/query");
+		return flash_redirect("Please Login First", "/query")
 
 	delete_row(kind, name)
-	return flash_redirect("Deleted Successfully", "/query");
+	return flash_redirect("Deleted Successfully", "/query")
 
 
 @app.route("/error")

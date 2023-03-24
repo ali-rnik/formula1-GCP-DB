@@ -7,13 +7,15 @@
 		<div class="container">
 			<form action="/compare" method="post">
 				Compare: <select name="compare-kind" id="compare-kind">
-					{% for elem in data.keys() %}
-					<option value="{{elem}}"> {{ elem }}</option>
-					{% endfor %}
-				</select> </br>
-				name1: <input type="text" name="name1"/>
-				name2: <input type="text" name="name2"/>
-				</br>
+					<option value="" selected="selected">Select Database</option>
+				</select> </br></br>
+				name1: <select name="name1" id="name1">
+					<option value="" selected="selected">Please choose comparison name1</option>
+				</select> 
+				name2: <select name="name2" id="name2">
+					<option value="" selected="selected">Please choose comparison name2</option>
+				</select> </br></br>   
+
 				<input type="submit" name="button" value="Start Comparison"/>
 			</form>
 		</div>
@@ -37,3 +39,26 @@
 		</div>
 	</body>
 </html>
+<script>
+	window.onload = function() {
+			var dd_data = {{ dd_data | safe }}
+			var compareSel = document.getElementById("compare-kind");
+			var name1Sel = document.getElementById("name1");    
+			var name2Sel = document.getElementById("name2");    
+
+			compareSel.legnth = 1;
+			for (var x in dd_data) {
+					compareSel.options[compareSel.options.length] = new Option(x, x);
+				}
+
+			compareSel.onchange = function() {
+					name1Sel.length = 1;
+					name2Sel.length = 1;
+					for (var y in dd_data[this.value]) {
+							name1Sel.options[name1Sel.options.length] = new Option(dd_data[this.value][y], dd_data[this.value][y]);
+							name2Sel.options[name2Sel.options.length] = new Option(dd_data[this.value][y], dd_data[this.value][y]);
+						}
+				}
+		}
+</script>
+
