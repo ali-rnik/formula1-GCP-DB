@@ -1,8 +1,5 @@
-import datetime
-import random
-import time
-from google.cloud import datastore
 import google.oauth2.id_token
+from google.cloud import datastore
 from flask import Flask, render_template, request, redirect, flash
 from google.auth.transport import requests
 
@@ -34,7 +31,6 @@ team_att = [
 		"finished-position",
 		]
 att_list = {"driver": driver_att, "team": team_att}
-
 
 def flash_redirect(message, path):
 	flash(message)
@@ -130,6 +126,7 @@ def tag_returner(a, b, col):
 			return "tie", "tie"
 		else:
 			return "up", "down"
+
 	if int(a, 36) > int(b, 36):
 		return "up", "down"
 	elif a == b:
@@ -223,7 +220,7 @@ def compare():
 			or retreived[1] == None
 			or retreived[0]["name"] == retreived[1]["name"]
 			):
-		return flash_redirect("Oooops! Wrong Comparison", "/compare")
+		return flash_redirect("Oooops! Try add some entities and then you'll see them in the dropdown, OR maybe comparing same entity? Don't do!", "/compare")
 
 	retreived = priority_taging(retreived, request.form["compare-kind"])
 	return render_template(
