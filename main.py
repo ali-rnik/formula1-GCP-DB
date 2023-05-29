@@ -44,7 +44,7 @@ def get_session_info():
 	if id_token:
 		try:
 			claims = google.oauth2.id_token.verify_firebase_token(
-					id_token, firebase_request_adapter, clock_skew_in_seconds=20
+					id_token, firebase_request_adapter
 					)
 		except ValueError as exc:
 			err_msg = str(exc)
